@@ -1,5 +1,7 @@
 import {
   "youyong5/tunescope" @lib,
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
 }
 
 pkgtype(kind: "executable")

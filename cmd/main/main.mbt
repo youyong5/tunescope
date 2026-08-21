@@ -1,11 +1,25 @@
 ///|
 fn main {
-  let tracks = [
-    @lib.new_track("浮躁", "王菲", "浮躁"),
-    @lib.new_track("分裂", "王菲", "浮躁"),
-    @lib.new_track("不来也不去", "陈奕迅", "H3M"),
-  ]
-  let count = @lib.count_tracks_by_artist(tracks, "王菲")
-  println("TuneScope demo")
-  println("王菲：\{count} 首")
+  let args = @env.args()
+
+  if args.length() < 2 {
+    println("Usage: moon run cmd/main -- <playlist.csv>")
+    return
+  }
+
+  let path = args[1]
+  let content = @fs.read_file_to_string(path) catch {
+    _ => {
+      println("Failed to read file: \{path}")
+      return
+    }
+  }
+
+  let result = @lib.parse_playlist(content)
+
+  println("TuneScope playlist report")
+  println("File: \{path}")
+  println("Total rows: \{result.total_rows}")
+  println("Valid tracks: \{result.tracks.length()}")
+  println("Invalid rows: \{result.invalid_rows}")
 }
