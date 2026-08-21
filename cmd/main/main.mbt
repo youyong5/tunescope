@@ -3,7 +3,7 @@ fn main {
   let args = @env.args()
 
   if args.length() < 2 {
-    println("Usage: moon run cmd/main -- <playlist.csv>")
+    println("Usage: moon run cmd/main -- <playlist.csv> [cleaned.csv]")
     return
   }
 
@@ -72,5 +72,20 @@ fn main {
         "- \{duplicate.title} — \{duplicate.artist} (\{duplicate.count} copies)",
       )
     }
+  }
+  if args.length() >= 3 {
+    let output_path = args[2]
+    let cleaned_csv = @lib.tracks_to_csv(result.tracks)
+
+    @fs.write_string_to_file(output_path, cleaned_csv) catch {
+      _ => {
+        println("")
+        println("Failed to write cleaned file: \{output_path}")
+        return
+      }
+    }
+
+    println("")
+    println("Cleaned playlist written to: \{output_path}")
   }
 }

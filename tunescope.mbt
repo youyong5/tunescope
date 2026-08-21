@@ -309,3 +309,76 @@ pub fn album_ranking(tracks : Array[Track]) -> Array[AlbumStat] {
 
   ranking
 }
+
+///|
+/// Escape one field so it can be safely written into a CSV file.
+fn escape_csv_field(value : String) -> String {
+  let chars = value.to_array()
+  let escaped : Array[Char] = []
+  let mut needs_quotes = false
+
+  for char in chars {
+    if char == '"' {
+      escaped.push('"')
+      escaped.push('"')
+      needs_quotes = true
+    } else {
+      if char == ',' || char == '\n' || char == '\r' {
+        needs_quotes = true
+      }
+
+      escaped.push(char)
+    }
+  }
+
+  let content = String::from_array(escaped)
+
+  if needs_quotes {
+    "\"\{content}\""
+  } else {
+    content
+  }
+}
+
+///|
+/// Convert tracks into a complete CSV document.
+pub fn tracks_to_csv(tracks : Array[Track]) -> String {
+  let mut csv = "title,artist,album\n"
+
+  for track in tracks {
+    csv = csv +
+      "\{escape_csv_field(track.title)}," +
+      "\{escape_csv_field(track.artist)}," +
+      "\{escape_csv_field(track.album)}\n"
+  }
+
+  csv
+}
+
+///|
+test "export tracks to csv" {
+  let tracks = [new_track("浮躁", "王菲", "浮躁")]
+  let expected = "title,artist,album\n浮躁,王菲,浮躁\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
+
+///|
+test "quote commas when exporting csv" {
+  let tracks = [new_track("Song, Part 1", "Artist", "Album, Deluxe")]
+  let expected = "title,artist,album\n\"Song, Part 1\",Artist,\"Album, Deluxe\"\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
+
+///|
+test "escape double quotes when exporting csv" {
+  let tracks = [new_track("He said \"Hi\"", "Artist", "Album")]
+  let expected = "title,artist,album\n\"He said \"\"Hi\"\"\",Artist,Album\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
+
+///|
+test "export empty playlist with header" {
+  let tracks : Array[Track] = []
+  let expected = "title,artist,album\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}

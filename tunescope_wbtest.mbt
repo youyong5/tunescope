@@ -290,3 +290,31 @@ test "reject unclosed quoted field" {
 test "reject text after closing quote" {
   assert_eq(parse_track_line("\"Song\"oops,Artist,Album"), None)
 }
+
+///|
+test "export tracks to csv" {
+  let tracks = [new_track("浮躁", "王菲", "浮躁")]
+  let expected = "title,artist,album\n浮躁,王菲,浮躁\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
+
+///|
+test "quote commas when exporting csv" {
+  let tracks = [new_track("Song, Part 1", "Artist", "Album, Deluxe")]
+  let expected = "title,artist,album\n\"Song, Part 1\",Artist,\"Album, Deluxe\"\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
+
+///|
+test "escape double quotes when exporting csv" {
+  let tracks = [new_track("He said \"Hi\"", "Artist", "Album")]
+  let expected = "title,artist,album\n\"He said \"\"Hi\"\"\",Artist,Album\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
+
+///|
+test "export empty playlist with header" {
+  let tracks : Array[Track] = []
+  let expected = "title,artist,album\n"
+  assert_eq(tracks_to_csv(tracks), expected)
+}
