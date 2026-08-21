@@ -80,3 +80,39 @@ pub fn parse_playlist(content : String) -> PlaylistParseResult {
 
   { tracks, total_rows, invalid_rows }
 }
+
+///|
+pub(all) struct ArtistStat {
+  artist : String
+  count : Int
+} derive(Debug, Eq)
+
+///|
+/// Count tracks by artist and return a descending ranking.
+pub fn artist_ranking(tracks : Array[Track]) -> Array[ArtistStat] {
+  let counts : Map[String, Int] = Map([])
+
+  for track in tracks {
+    counts.update_or_default(track.artist, 1, count => count + 1)
+  }
+
+  let ranking : Array[ArtistStat] = []
+
+  counts.each((artist, count) => ranking.push({ artist, count }))
+
+  ranking.sort_by((a, b) => {
+    if a.count > b.count {
+      -1
+    } else if a.count < b.count {
+      1
+    } else if a.artist < b.artist {
+      -1
+    } else if a.artist > b.artist {
+      1
+    } else {
+      0
+    }
+  })
+
+  ranking
+}

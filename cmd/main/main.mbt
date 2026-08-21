@@ -22,4 +22,18 @@ fn main {
   println("Total rows: \{result.total_rows}")
   println("Valid tracks: \{result.tracks.length()}")
   println("Invalid rows: \{result.invalid_rows}")
+  let ranking = @lib.artist_ranking(result.tracks)
+
+  println("")
+  println("Top artists:")
+
+  let mut position = 1
+  for stat in ranking {
+    if position > 5 {
+      break
+    }
+
+    println("\{position}. \{stat.artist}: \{stat.count}")
+    position = position + 1
+  }
 }

@@ -99,3 +99,41 @@ test "parse empty playlist" {
   assert_eq(result.tracks.length(), 0)
   assert_eq(result.invalid_rows, 0)
 }
+
+///|
+test "rank artists by track count" {
+  let tracks = [
+    new_track("浮躁", "王菲", "浮躁"),
+    new_track("分裂", "王菲", "浮躁"),
+    new_track("闷", "王菲", "王菲"),
+    new_track("不来也不去", "陈奕迅", "H3M"),
+    new_track("反高潮", "陈奕迅", "我的快乐时代"),
+    new_track("两者", "张悬", "神的游戏"),
+  ]
+
+  let ranking = artist_ranking(tracks)
+
+  assert_eq(ranking.length(), 3)
+  assert_eq(ranking[0].artist, "王菲")
+  assert_eq(ranking[0].count, 3)
+  assert_eq(ranking[1].artist, "陈奕迅")
+  assert_eq(ranking[1].count, 2)
+  assert_eq(ranking[2].artist, "张悬")
+  assert_eq(ranking[2].count, 1)
+}
+
+///|
+test "sort equally ranked artists by name" {
+  let tracks = [new_track("Song B", "B", ""), new_track("Song A", "A", "")]
+
+  let ranking = artist_ranking(tracks)
+
+  assert_eq(ranking[0].artist, "A")
+  assert_eq(ranking[1].artist, "B")
+}
+
+///|
+test "rank artists in empty playlist" {
+  let ranking = artist_ranking([])
+  assert_eq(ranking.length(), 0)
+}
