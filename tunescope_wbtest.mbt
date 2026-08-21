@@ -49,3 +49,53 @@ test "allow empty album" {
   let expected = Some(new_track("浮躁", "王菲", ""))
   assert_eq(actual, expected)
 }
+
+///|
+test "parse playlist with header" {
+  let content = "title,artist,album\n浮躁,王菲,浮躁\n分裂,王菲,浮躁"
+  let result = parse_playlist(content)
+
+  assert_eq(result.total_rows, 2)
+  assert_eq(result.tracks.length(), 2)
+  assert_eq(result.invalid_rows, 0)
+  assert_eq(result.tracks[0], new_track("浮躁", "王菲", "浮躁"))
+}
+
+///|
+test "parse playlist without header" {
+  let content = "浮躁,王菲,浮躁\n不来也不去,陈奕迅,H3M"
+  let result = parse_playlist(content)
+
+  assert_eq(result.total_rows, 2)
+  assert_eq(result.tracks.length(), 2)
+  assert_eq(result.invalid_rows, 0)
+}
+
+///|
+test "ignore blank lines and support Windows line endings" {
+  let content = "title,artist,album\r\n\r\n浮躁,王菲,浮躁\r\n  \r\n"
+  let result = parse_playlist(content)
+
+  assert_eq(result.total_rows, 1)
+  assert_eq(result.tracks.length(), 1)
+  assert_eq(result.invalid_rows, 0)
+}
+
+///|
+test "count invalid playlist rows" {
+  let content = "title,artist,album\n浮躁,王菲,浮躁\n错误数据\n,王菲,浮躁"
+  let result = parse_playlist(content)
+
+  assert_eq(result.total_rows, 3)
+  assert_eq(result.tracks.length(), 1)
+  assert_eq(result.invalid_rows, 2)
+}
+
+///|
+test "parse empty playlist" {
+  let result = parse_playlist("\n  \n\r\n")
+
+  assert_eq(result.total_rows, 0)
+  assert_eq(result.tracks.length(), 0)
+  assert_eq(result.invalid_rows, 0)
+}
