@@ -22,9 +22,75 @@ pub fn count_tracks_by_artist(tracks : Array[Track], artist : String) -> Int {
 }
 
 ///|
+/// Split one CSV row, supporting quoted commas and escaped double quotes.
+fn parse_csv_fields(line : String) -> Array[String]? {
+  let fields : Array[String] = []
+  let chars = line.to_array()
+  let mut current : Array[Char] = []
+  let mut index = 0
+  let mut in_quotes = false
+  let mut after_quote = false
+
+  while index < chars.length() {
+    let char = chars[index]
+
+    if in_quotes {
+      if char == '"' {
+        if index + 1 < chars.length() && chars[index + 1] == '"' {
+          current.push('"')
+          index = index + 2
+        } else {
+          in_quotes = false
+          after_quote = true
+          index = index + 1
+        }
+      } else {
+        current.push(char)
+        index = index + 1
+      }
+    } else if after_quote {
+      if char == ',' {
+        fields.push(String::from_array(current))
+        current = []
+        after_quote = false
+        index = index + 1
+      } else if char == ' ' || char == '\t' {
+        index = index + 1
+      } else {
+        return None
+      }
+    } else if char == ',' {
+      fields.push(String::from_array(current))
+      current = []
+      index = index + 1
+    } else if char == '"' {
+      if current.length() != 0 {
+        return None
+      }
+
+      in_quotes = true
+      index = index + 1
+    } else {
+      current.push(char)
+      index = index + 1
+    }
+  }
+
+  if in_quotes {
+    return None
+  }
+
+  fields.push(String::from_array(current))
+  Some(fields)
+}
+
+///|
 /// Parse one playlist row in the format: title,artist,album
 pub fn parse_track_line(line : String) -> Track? {
-  let fields = line.split(",").collect()
+  let fields = match parse_csv_fields(line) {
+    Some(fields) => fields
+    None => return None
+  }
 
   if fields.length() != 3 {
     return None

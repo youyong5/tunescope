@@ -259,3 +259,34 @@ test "rank albums in empty playlist" {
   let ranking = album_ranking([])
   assert_eq(ranking.length(), 0)
 }
+
+///|
+test "parse quoted comma in title" {
+  let actual = parse_track_line("\"Song, Part 1\",Artist,Album")
+  let expected = Some(new_track("Song, Part 1", "Artist", "Album"))
+  assert_eq(actual, expected)
+}
+
+///|
+test "parse escaped double quotes" {
+  let actual = parse_track_line("\"He said \"\"Hi\"\"\",Artist,Album")
+  let expected = Some(new_track("He said \"Hi\"", "Artist", "Album"))
+  assert_eq(actual, expected)
+}
+
+///|
+test "parse quoted comma in album" {
+  let actual = parse_track_line("Song,Artist,\"Album, Deluxe\"")
+  let expected = Some(new_track("Song", "Artist", "Album, Deluxe"))
+  assert_eq(actual, expected)
+}
+
+///|
+test "reject unclosed quoted field" {
+  assert_eq(parse_track_line("\"Song,Artist,Album"), None)
+}
+
+///|
+test "reject text after closing quote" {
+  assert_eq(parse_track_line("\"Song\"oops,Artist,Album"), None)
+}
