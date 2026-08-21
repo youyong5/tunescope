@@ -116,3 +116,68 @@ pub fn artist_ranking(tracks : Array[Track]) -> Array[ArtistStat] {
 
   ranking
 }
+
+///|
+pub(all) struct DuplicateStat {
+  title : String
+  artist : String
+  count : Int
+} derive(Debug, Eq)
+
+///|
+/// Find duplicate tracks by normalized title and artist.
+pub fn duplicate_tracks(tracks : Array[Track]) -> Array[DuplicateStat] {
+  let positions : Map[String, Int] = Map([])
+  let groups : Array[DuplicateStat] = []
+
+  for track in tracks {
+    let title = track.title.trim().to_owned()
+    let artist = track.artist.trim().to_owned()
+    let title_key = title.to_lower()
+    let artist_key = artist.to_lower()
+    let key = "\{artist_key.length()}:\{artist_key}\{title_key}"
+
+    match positions.get(key) {
+      Some(index) => {
+        let existing = groups[index]
+        groups[index] = {
+          title: existing.title,
+          artist: existing.artist,
+          count: existing.count + 1,
+        }
+      }
+      None => {
+        positions.set(key, groups.length())
+        groups.push({ title, artist, count: 1 })
+      }
+    }
+  }
+
+  let duplicates : Array[DuplicateStat] = []
+
+  for group in groups {
+    if group.count > 1 {
+      duplicates.push(group)
+    }
+  }
+
+  duplicates.sort_by((a, b) => {
+    if a.count > b.count {
+      -1
+    } else if a.count < b.count {
+      1
+    } else if a.artist < b.artist {
+      -1
+    } else if a.artist > b.artist {
+      1
+    } else if a.title < b.title {
+      -1
+    } else if a.title > b.title {
+      1
+    } else {
+      0
+    }
+  })
+
+  duplicates
+}

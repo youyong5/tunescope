@@ -137,3 +137,71 @@ test "rank artists in empty playlist" {
   let ranking = artist_ranking([])
   assert_eq(ranking.length(), 0)
 }
+
+///|
+test "detect duplicate tracks" {
+  let tracks = [
+    new_track("浮躁", "王菲", "浮躁"),
+    new_track("浮躁", "王菲", "王菲"),
+    new_track("分裂", "王菲", "浮躁"),
+  ]
+
+  let duplicates = duplicate_tracks(tracks)
+
+  assert_eq(duplicates.length(), 1)
+  assert_eq(duplicates[0].title, "浮躁")
+  assert_eq(duplicates[0].artist, "王菲")
+  assert_eq(duplicates[0].count, 2)
+}
+
+///|
+test "detect duplicates ignoring spaces and English case" {
+  let tracks = [
+    new_track("  Song  ", " Artist ", "Album A"),
+    new_track("song", "artist", "Album B"),
+  ]
+
+  let duplicates = duplicate_tracks(tracks)
+
+  assert_eq(duplicates.length(), 1)
+  assert_eq(duplicates[0].title, "Song")
+  assert_eq(duplicates[0].artist, "Artist")
+  assert_eq(duplicates[0].count, 2)
+}
+
+///|
+test "keep same title by different artists separate" {
+  let tracks = [
+    new_track("Home", "Artist A", ""),
+    new_track("Home", "Artist B", ""),
+  ]
+
+  let duplicates = duplicate_tracks(tracks)
+
+  assert_eq(duplicates.length(), 0)
+}
+
+///|
+test "sort duplicate groups by occurrence count" {
+  let tracks = [
+    new_track("Song A", "Artist A", ""),
+    new_track("Song A", "Artist A", ""),
+    new_track("Song B", "Artist B", ""),
+    new_track("Song B", "Artist B", ""),
+    new_track("Song B", "Artist B", ""),
+  ]
+
+  let duplicates = duplicate_tracks(tracks)
+
+  assert_eq(duplicates.length(), 2)
+  assert_eq(duplicates[0].title, "Song B")
+  assert_eq(duplicates[0].count, 3)
+  assert_eq(duplicates[1].title, "Song A")
+  assert_eq(duplicates[1].count, 2)
+}
+
+///|
+test "find duplicates in empty playlist" {
+  let duplicates = duplicate_tracks([])
+  assert_eq(duplicates.length(), 0)
+}

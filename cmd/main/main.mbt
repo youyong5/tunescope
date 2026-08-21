@@ -35,5 +35,20 @@ fn main {
 
     println("\{position}. \{stat.artist}: \{stat.count}")
     position = position + 1
+
+    let duplicates = @lib.duplicate_tracks(result.tracks)
+
+    println("")
+    println("Duplicate tracks: \{duplicates.length()} groups")
+
+    if duplicates.length() == 0 {
+      println("No duplicate tracks found.")
+    } else {
+      for duplicate in duplicates {
+        println(
+          "- \{duplicate.title} — \{duplicate.artist} (\{duplicate.count} copies)",
+        )
+      }
+    }
   }
 }
