@@ -3,7 +3,9 @@ fn main {
   let args = @env.args()
 
   if args.length() < 2 {
-    println("Usage: moon run cmd/main -- <playlist.csv> [cleaned.csv]")
+    println(
+      "Usage: moon run cmd/main -- <playlist.csv> [cleaned.csv] [report.md]",
+    )
     return
   }
 
@@ -87,5 +89,19 @@ fn main {
 
     println("")
     println("Cleaned playlist written to: \{output_path}")
+  }
+  if args.length() >= 4 {
+    let report_path = args[3]
+    let report = @lib.generate_markdown_report(path, result)
+
+    @fs.write_string_to_file(report_path, report) catch {
+      _ => {
+        println("")
+        println("Failed to write Markdown report: \{report_path}")
+        return
+      }
+    }
+
+    println("Markdown report written to: \{report_path}")
   }
 }

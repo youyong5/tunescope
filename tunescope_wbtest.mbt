@@ -318,3 +318,49 @@ test "export empty playlist with header" {
   let expected = "title,artist,album\n"
   assert_eq(tracks_to_csv(tracks), expected)
 }
+
+///|
+test "generate markdown playlist report" {
+  let result = parse_playlist(
+    "title,artist,album\n浮躁,王菲,浮躁\n浮躁,王菲,浮躁\n",
+  )
+
+  let expected = "# TuneScope Playlist Report\n\n" +
+    "## Summary\n\n" +
+    "- Source: `playlist.csv`\n" +
+    "- Total rows: 2\n" +
+    "- Valid tracks: 2\n" +
+    "- Invalid rows: 0\n" +
+    "- Unique artists: 1\n" +
+    "- Known albums: 1\n" +
+    "\n## Top Artists\n\n" +
+    "1. 王菲 — 2 tracks\n" +
+    "\n## Top Albums\n\n" +
+    "1. 浮躁 — 王菲: 2 tracks\n" +
+    "\n## Duplicate Tracks\n\n" +
+    "- 浮躁 — 王菲: 2 copies\n"
+
+  assert_eq(generate_markdown_report("playlist.csv", result), expected)
+}
+
+///|
+test "generate markdown report for empty playlist" {
+  let result = parse_playlist("title,artist,album\n")
+
+  let expected = "# TuneScope Playlist Report\n\n" +
+    "## Summary\n\n" +
+    "- Source: `empty.csv`\n" +
+    "- Total rows: 0\n" +
+    "- Valid tracks: 0\n" +
+    "- Invalid rows: 0\n" +
+    "- Unique artists: 0\n" +
+    "- Known albums: 0\n" +
+    "\n## Top Artists\n\n" +
+    "No valid artists found.\n" +
+    "\n## Top Albums\n\n" +
+    "No known albums found.\n" +
+    "\n## Duplicate Tracks\n\n" +
+    "No duplicate tracks found.\n"
+
+  assert_eq(generate_markdown_report("empty.csv", result), expected)
+}

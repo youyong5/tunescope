@@ -356,29 +356,72 @@ pub fn tracks_to_csv(tracks : Array[Track]) -> String {
 }
 
 ///|
-test "export tracks to csv" {
-  let tracks = [new_track("浮躁", "王菲", "浮躁")]
-  let expected = "title,artist,album\n浮躁,王菲,浮躁\n"
-  assert_eq(tracks_to_csv(tracks), expected)
-}
+/// Generate a Markdown report for one parsed playlist.
+pub fn generate_markdown_report(
+  source_path : String,
+  result : PlaylistParseResult,
+) -> String {
+  let artists = artist_ranking(result.tracks)
+  let albums = album_ranking(result.tracks)
+  let duplicates = duplicate_tracks(result.tracks)
 
-///|
-test "quote commas when exporting csv" {
-  let tracks = [new_track("Song, Part 1", "Artist", "Album, Deluxe")]
-  let expected = "title,artist,album\n\"Song, Part 1\",Artist,\"Album, Deluxe\"\n"
-  assert_eq(tracks_to_csv(tracks), expected)
-}
+  let mut report = "# TuneScope Playlist Report\n\n"
 
-///|
-test "escape double quotes when exporting csv" {
-  let tracks = [new_track("He said \"Hi\"", "Artist", "Album")]
-  let expected = "title,artist,album\n\"He said \"\"Hi\"\"\",Artist,Album\n"
-  assert_eq(tracks_to_csv(tracks), expected)
-}
+  report = report + "## Summary\n\n"
+  report = report + "- Source: `\{source_path}`\n"
+  report = report + "- Total rows: \{result.total_rows}\n"
+  report = report + "- Valid tracks: \{result.tracks.length()}\n"
+  report = report + "- Invalid rows: \{result.invalid_rows}\n"
+  report = report + "- Unique artists: \{artists.length()}\n"
+  report = report + "- Known albums: \{albums.length()}\n"
 
-///|
-test "export empty playlist with header" {
-  let tracks : Array[Track] = []
-  let expected = "title,artist,album\n"
-  assert_eq(tracks_to_csv(tracks), expected)
+  report = report + "\n## Top Artists\n\n"
+
+  if artists.length() == 0 {
+    report = report + "No valid artists found.\n"
+  } else {
+    let mut position = 1
+
+    for artist in artists {
+      if position > 5 {
+        break
+      }
+
+      report = report +
+        "\{position}. \{artist.artist} — \{artist.count} tracks\n"
+      position = position + 1
+    }
+  }
+
+  report = report + "\n## Top Albums\n\n"
+
+  if albums.length() == 0 {
+    report = report + "No known albums found.\n"
+  } else {
+    let mut position = 1
+
+    for album in albums {
+      if position > 5 {
+        break
+      }
+
+      report = report +
+        "\{position}. \{album.album} — \{album.artist}: \{album.count} tracks\n"
+      position = position + 1
+    }
+  }
+
+  report = report + "\n## Duplicate Tracks\n\n"
+
+  if duplicates.length() == 0 {
+    report = report + "No duplicate tracks found.\n"
+  } else {
+    for duplicate in duplicates {
+      report = report +
+        "- \{duplicate.title} — \{duplicate.artist}: " +
+        "\{duplicate.count} copies\n"
+    }
+  }
+
+  report
 }
