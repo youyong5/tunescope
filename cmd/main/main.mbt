@@ -22,6 +22,7 @@ fn main {
   println("Total rows: \{result.total_rows}")
   println("Valid tracks: \{result.tracks.length()}")
   println("Invalid rows: \{result.invalid_rows}")
+
   let ranking = @lib.artist_ranking(result.tracks)
 
   println("")
@@ -35,20 +36,41 @@ fn main {
 
     println("\{position}. \{stat.artist}: \{stat.count}")
     position = position + 1
+  }
 
-    let duplicates = @lib.duplicate_tracks(result.tracks)
+  let albums = @lib.album_ranking(result.tracks)
 
-    println("")
-    println("Duplicate tracks: \{duplicates.length()} groups")
+  println("")
+  println("Unique artists: \{ranking.length()}")
+  println("Known albums: \{albums.length()}")
 
-    if duplicates.length() == 0 {
-      println("No duplicate tracks found.")
-    } else {
-      for duplicate in duplicates {
-        println(
-          "- \{duplicate.title} — \{duplicate.artist} (\{duplicate.count} copies)",
-        )
-      }
+  println("")
+  println("Top albums:")
+
+  let mut album_position = 1
+  for album in albums {
+    if album_position > 5 {
+      break
+    }
+
+    println(
+      "\{album_position}. \{album.album} — \{album.artist}: \{album.count}",
+    )
+    album_position = album_position + 1
+  }
+
+  let duplicates = @lib.duplicate_tracks(result.tracks)
+
+  println("")
+  println("Duplicate tracks: \{duplicates.length()} groups")
+
+  if duplicates.length() == 0 {
+    println("No duplicate tracks found.")
+  } else {
+    for duplicate in duplicates {
+      println(
+        "- \{duplicate.title} — \{duplicate.artist} (\{duplicate.count} copies)",
+      )
     }
   }
 }

@@ -205,3 +205,57 @@ test "find duplicates in empty playlist" {
   let duplicates = duplicate_tracks([])
   assert_eq(duplicates.length(), 0)
 }
+
+///|
+test "rank albums by track count" {
+  let tracks = [
+    new_track("浮躁", "王菲", "浮躁"),
+    new_track("分裂", "王菲", "浮躁"),
+    new_track("不来也不去", "陈奕迅", "H3M"),
+    new_track("无专辑歌曲", "测试歌手", ""),
+  ]
+
+  let ranking = album_ranking(tracks)
+
+  assert_eq(ranking.length(), 2)
+  assert_eq(ranking[0].album, "浮躁")
+  assert_eq(ranking[0].artist, "王菲")
+  assert_eq(ranking[0].count, 2)
+  assert_eq(ranking[1].album, "H3M")
+  assert_eq(ranking[1].count, 1)
+}
+
+///|
+test "keep same album name by different artists separate" {
+  let tracks = [
+    new_track("Song A", "Artist A", "Greatest Hits"),
+    new_track("Song B", "Artist B", "Greatest Hits"),
+  ]
+
+  let ranking = album_ranking(tracks)
+
+  assert_eq(ranking.length(), 2)
+  assert_eq(ranking[0].artist, "Artist A")
+  assert_eq(ranking[1].artist, "Artist B")
+}
+
+///|
+test "merge album names ignoring spaces and English case" {
+  let tracks = [
+    new_track("Song A", " Artist ", " Album "),
+    new_track("Song B", "artist", "album"),
+  ]
+
+  let ranking = album_ranking(tracks)
+
+  assert_eq(ranking.length(), 1)
+  assert_eq(ranking[0].album, "Album")
+  assert_eq(ranking[0].artist, "Artist")
+  assert_eq(ranking[0].count, 2)
+}
+
+///|
+test "rank albums in empty playlist" {
+  let ranking = album_ranking([])
+  assert_eq(ranking.length(), 0)
+}

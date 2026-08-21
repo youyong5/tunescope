@@ -181,3 +181,65 @@ pub fn duplicate_tracks(tracks : Array[Track]) -> Array[DuplicateStat] {
 
   duplicates
 }
+
+///|
+pub(all) struct AlbumStat {
+  album : String
+  artist : String
+  count : Int
+} derive(Debug, Eq)
+
+///|
+/// Count tracks by album and artist, excluding empty album names.
+pub fn album_ranking(tracks : Array[Track]) -> Array[AlbumStat] {
+  let positions : Map[String, Int] = Map([])
+  let ranking : Array[AlbumStat] = []
+
+  for track in tracks {
+    let album = track.album.trim().to_owned()
+    let artist = track.artist.trim().to_owned()
+
+    if album == "" {
+      continue
+    }
+
+    let album_key = album.to_lower()
+    let artist_key = artist.to_lower()
+    let key = "\{artist_key.length()}:\{artist_key}\{album_key}"
+
+    match positions.get(key) {
+      Some(index) => {
+        let existing = ranking[index]
+        ranking[index] = {
+          album: existing.album,
+          artist: existing.artist,
+          count: existing.count + 1,
+        }
+      }
+      None => {
+        positions.set(key, ranking.length())
+        ranking.push({ album, artist, count: 1 })
+      }
+    }
+  }
+
+  ranking.sort_by((a, b) => {
+    if a.count > b.count {
+      -1
+    } else if a.count < b.count {
+      1
+    } else if a.artist < b.artist {
+      -1
+    } else if a.artist > b.artist {
+      1
+    } else if a.album < b.album {
+      -1
+    } else if a.album > b.album {
+      1
+    } else {
+      0
+    }
+  })
+
+  ranking
+}
